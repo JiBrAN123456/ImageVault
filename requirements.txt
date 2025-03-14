@@ -1,0 +1,1 @@
+pip install Flask flask-cors flask-jwt-extended flask-sqlalchemy psycopg2-binary boto3 python-dotenv

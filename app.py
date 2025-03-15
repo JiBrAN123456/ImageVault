@@ -6,7 +6,7 @@ import os
 from models import db
 from auth_routes import auth
 from protected_routes import protected
-
+from config import blacklist
 
 # Load environment variables
 load_dotenv()
@@ -17,10 +17,22 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('SECRET_KEY')  # Secret key for JWT
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # No expiry for now
+app.config['JWT_BLACKLIST_ENABLED'] = True  # ✅ Enable Blacklisting
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ["access", "refresh"]
 
 # ✅ Initialize Extensions
 db.init_app(app)
 jwt = JWTManager(app)
+
+
+blacklist = set()
+
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload):
+    return jwt_payload["jti"] in blacklist 
+
+
 
 # ✅ Register Blueprints
 

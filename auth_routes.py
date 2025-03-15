@@ -50,3 +50,13 @@ def login():
     access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(hours=1))
 
     return jsonify({"access_token": access_token}), 200
+
+
+
+
+@auth.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]  # Get unique token identifier
+    blacklist.add(jti)  # ✅ Blacklist the token
+    return jsonify({"message": "Successfully logged out"}), 200

@@ -25,11 +25,10 @@ class User(db.Model):
 
 
 class Image(db.Model):
-    id = db.Column(db.String(36), primary_key = True , default= lambda: str(uuid.uuid4()))
-    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable = False)
-    filename = db.Column(db.String(255), nullable = False)
-    s3_url = db.Column(db.String(500), nullable = False)
-    uploaded_at = db.Column(db.DateTime, default =datetime.utcnow)
+    id = db.Column(db.String(36), primary_key=True, default=str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
+    image_key = db.Column(db.String(255), nullable=False)  # S3 image filename
+    image_url = db.Column(db.String(500), nullable=False)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = db.relationship('User', backref=db.backref('images', lazy = True))
-
+    user = db.relationship("User", backref="images")

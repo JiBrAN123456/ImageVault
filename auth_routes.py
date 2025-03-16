@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import (
+    create_access_token, create_refresh_token, 
+    jwt_required, get_jwt_identity, get_jwt
+)
 from models import db, User
 import datetime
 from config import blacklist
@@ -47,10 +50,21 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    # Generate JWT Token
-    access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(hours=1))
+    # ✅ Generate Access and Refresh Tokens
+    access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(minutes=15))
+    refresh_token = create_refresh_token(identity=user.id, expires_delta=datetime.timedelta(days=7))
 
-    return jsonify({"access_token": access_token}), 200
+    return jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200
+
+
+# ✅ Refresh Token API (Generates a New Access Token)
+@auth.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)  # 🔥 Requires a valid refresh token
+def refresh():
+    user_id = get_jwt_identity()  # Get user ID from the refresh token
+    new_access_token = create_access_token(identity=user_id, expires_delta=datetime.timedelta(minutes=15))
+
+    return jsonify({"access_token": new_access_token}), 200
 
 
 
